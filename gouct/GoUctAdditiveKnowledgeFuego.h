@@ -26,13 +26,13 @@ class GoUctAdditiveKnowledgeFuego
 {
 public:
 
-    static const float VALUE_MULTIPLIER = 4.0f;
+    static constexpr float VALUE_MULTIPLIER = 4.0f;
 
     GoUctAdditiveKnowledgeFuego(const GoBoard& bd,
 				const GoUctAdditiveKnowledgeParamFuego& param);
 
     void ProcessPosition(std::vector<SgUctMoveInfo>& moves);
-    
+
 private:
     const GoUctAdditiveKnowledgeParamFuego& m_param;
 };

@@ -30,7 +30,7 @@ struct SgUctMoveInfo
     /** Move for the child. */
     SgMove m_move;
 
-    /** Value of node after node is created. 
+    /** Value of node after node is created.
         Value is from child's perspective, so the value stored here
         must be the inverse of the evaluation from the parent's
         perspective.  */
@@ -46,7 +46,7 @@ struct SgUctMoveInfo
 
     /** Rave count of move after node is created. */
     SgUctValue m_raveCount;
- 
+
     /** Probability decided by pattern gammas. */
     float m_prior;
 
@@ -58,6 +58,8 @@ struct SgUctMoveInfo
 
     SgUctMoveInfo(SgMove move, SgUctValue value, SgUctValue count,
                   SgUctValue raveValue, SgUctValue raveCount);
+
+    void Add(const SgUctValue mean, const SgUctValue count);
 };
 
 inline SgUctMoveInfo::SgUctMoveInfo()
@@ -90,14 +92,27 @@ inline SgUctMoveInfo::SgUctMoveInfo(SgMove move, SgUctValue value, SgUctValue co
       m_gamma(0.0)
 { }
 
+inline void SgUctMoveInfo::Add(const SgUctValue mean, const SgUctValue count)
+{
+    m_count += count;
+    SgUctValue v1 = 1 - m_value;
+    SgUctValue v2 = mean;
+    v2 -= v1; // same formula for weighted mean as in SgStatisticsBase::Add
+    v1 += (v2 * count) / m_count;
+    m_value = 1 - v1;
+
+    m_raveCount = m_count;
+    m_raveValue = v1;
+}
+
 //----------------------------------------------------------------------------
 
 /** Types of proven nodes. */
-typedef enum 
+typedef enum
 {
     /** Node is not a proven win or loss. */
     SG_NOT_PROVEN,
-    
+
     /** Node is a proven win. */
     SG_PROVEN_WIN,
 
@@ -228,7 +243,7 @@ public:
 
     /** Initialize RAVE value with prior knowledge. */
     void InitializeRaveValue(SgUctValue value,  SgUctValue count);
-    
+
     SgUctValue Prior() const;
 
     void SetPrior(SgUctValue prior);
@@ -968,7 +983,7 @@ inline void SgUctTree::CreateChildren(std::size_t allocatorId,
     SG_ASSERT(NuAllocators() > 1 || ! node.HasChildren());
 
     const SgUctNode* firstChild = allocator.Finish();
-    
+
     SgUctValue parentCount = allocator.Create(moves);
 
     // Write order dependency: SgUctSearch in lock-free mode assumes that
@@ -997,7 +1012,7 @@ inline void SgUctTree::RemoveGameResults(const SgUctNode& node,
 {
     SG_ASSERT(Contains(node));
     // Parameters are const-references, because only the tree is allowed
-    // to modify nodes 
+    // to modify nodes
     if (father != 0)
         const_cast<SgUctNode*>(father)->DecPosCount(count);
     const_cast<SgUctNode&>(node).RemoveGameResults(eval, count);
@@ -1143,7 +1158,7 @@ private:
 
     /** Not implemented.
         Prevent unintended usage of operator bool() as an int.
-        Detects bug of forgetting to dereference iterator - 
+        Detects bug of forgetting to dereference iterator -
         it instead of *it
     */
     operator int() const;
@@ -1201,7 +1216,7 @@ private:
 
     /** Not implemented.
         Prevent unintended usage of operator bool() as an int.
-        Detects bug of forgetting to dereference iterator - 
+        Detects bug of forgetting to dereference iterator -
         it instead of *it
     */
     operator int() const;

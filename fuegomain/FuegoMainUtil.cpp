@@ -30,17 +30,17 @@ bool LoadBookFile(GoBook& book, const path& file)
         string nativeFile = normalizedFile.string();
     #else
         string nativeFile = normalizedFile.native_file_string();
-    #endif	
+    #endif
     SgDebug() << "Loading opening book from '" << nativeFile << "'... ";
-    ifstream in(nativeFile.c_str());
-    if (! in)
+    std::ifstream input(nativeFile.c_str());
+    if (! input)
     {
         SgDebug() << "not found\n";
         return false;
     }
     try
     {
-        book.Read(in);
+        book.Read(input);
     }
     catch (const SgException& e)
     {
